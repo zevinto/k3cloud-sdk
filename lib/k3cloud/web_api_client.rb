@@ -31,22 +31,26 @@ module K3cloud
         "parameters" => parameters,
         "v" => "1.0"
       }
-      request = Http.new(url, header, body)
-      result = request.post_json
-
-      print("result======#{result}")
+      request = Http.new(url, header, body, @config.connect_timeout, @config.request_timeout)
+      result = request.post
 
       if result&.start_with?("response_error:")
         error = K3cloudError.parse(result)
-        raise K3cloudError, result if error.nil?
+        raise StandardError, result if error.nil?
 
         message = error.inner_ex_wrapper.nil? ? error.message : "#{error.message} --> #{error.inner_ex_wrapper.message}"
-        raise K3cloudError, message
+        raise StandardError, message
       else
-        result
+        begin
+          if result.include?(',"IsSuccess":false,')
+            raise StandardError, result
+          else
+            JSON.parse(result)
+          end
+        rescue JSON::ParserError => e
+          raise StandardError, "JSON parse error, response: [#{result}]", e
+        end
       end
-    rescue StandardError => e
-      raise e
     end
 
     private
@@ -63,35 +67,31 @@ module K3cloud
     # @note: https://vip.kingdee.com/knowledge/specialDetail/229961573895771136?category=229964512944566016&id=423060878259269120&productLineId=1
     def build_header(url)
       header = {}
-      begin
-        if @config
-          app_id_ary = @config.app_id.split("_")
-          cookie_hd = app_id_ary[0]
-          api_gw_sec = app_id_ary.size >= 2 ? decode_sec(app_id_ary[1]) : ""
-          header[ConstDefine::X_API_CLIENT_ID] = cookie_hd
-          header[ConstDefine::X_API_AUTH_VERSION] = "2.0"
+      if @config
+        app_id_ary = @config.app_id.split("_")
+        cookie_hd = app_id_ary[0]
+        api_gw_sec = app_id_ary.size >= 2 ? decode_sec(app_id_ary[1]) : ""
+        header[ConstDefine::X_API_CLIENT_ID] = cookie_hd
+        header[ConstDefine::X_API_AUTH_VERSION] = "2.0"
 
-          timestamps = Time.now.to_i.to_s
-          header[ConstDefine::X_API_TIMESTAMP] = timestamps
-          header[ConstDefine::X_API_NONCE] = timestamps
-          header[ConstDefine::X_API_SIGN_HEADERS] = "X-Api-TimeStamp,X-Api-Nonce"
+        timestamps = Time.now.to_i.to_s
+        header[ConstDefine::X_API_TIMESTAMP] = timestamps
+        header[ConstDefine::X_API_NONCE] = timestamps
+        header[ConstDefine::X_API_SIGN_HEADERS] = "X-Api-TimeStamp,X-Api-Nonce"
 
-          url_path = CGI.escape(url.encode("UTF-8"))
-          context = "POST\n#{url_path}\n\nx-api-nonce:#{timestamps}\nx-api-timestamp:#{timestamps}\n"
-          api_signature = api_gw_sec == "" ? "" : MD5Utils.hash_mac(context, api_gw_sec)
-          header[ConstDefine::X_API_SIGNATURE] = api_signature
-          header[ConstDefine::X_KD_APP_KEY] = @config.app_id
+        url_path = CGI.escape(url.encode("UTF-8"))
+        context = "POST\n#{url_path}\n\nx-api-nonce:#{timestamps}\nx-api-timestamp:#{timestamps}\n"
+        api_signature = api_gw_sec == "" ? "" : MD5Utils.hash_mac(context, api_gw_sec)
+        header[ConstDefine::X_API_SIGNATURE] = api_signature
+        header[ConstDefine::X_KD_APP_KEY] = @config.app_id
 
-          data = "#{@config.acct_id},#{@config.user_name},#{@config.lcid},#{@config.org_num}"
-          app_data = Base64Utils.encoding_to_base64(data.encode("UTF-8").bytes)
-          header[ConstDefine::X_KD_APP_DATA] = app_data
+        data = "#{@config.acct_id},#{@config.user_name},#{@config.lcid},#{@config.org_num}"
+        app_data = Base64Utils.encoding_to_base64(data.bytes)
+        header[ConstDefine::X_KD_APP_DATA] = app_data
 
-          signature_data = "#{@config.app_id}#{data}"
-          kd_signature = MD5Utils.hash_mac(signature_data, @config.app_secret)
-          header[ConstDefine::X_KD_SIGNATURE] = kd_signature
-        end
-      rescue StandardError => e
-        e.backtrace
+        signature_data = "#{@config.app_id}#{data}"
+        kd_signature = MD5Utils.hash_mac(signature_data, @config.app_secret)
+        header[ConstDefine::X_KD_SIGNATURE] = kd_signature
       end
       header
     end

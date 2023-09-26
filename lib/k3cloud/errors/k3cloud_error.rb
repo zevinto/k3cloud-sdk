@@ -23,7 +23,6 @@ class K3cloudError < StandardError
     kd_error.inner_exception = K3cloudError.parse(parsed_json["InnerException"].to_json)
     kd_error
   rescue StandardError => e
-    print(e.backtrace)
     nil
   end
 end

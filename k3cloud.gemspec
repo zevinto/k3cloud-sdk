@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Ruby Gem for K3cloud API."
   spec.description = "Ruby Gem for K3cloud API."
-  spec.homepage = "https://github.com/zevinto/amzn_sp_api"
+  spec.homepage = "https://github.com/zevinto/k3cloud-sdk"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.0.0"
   spec.metadata["homepage_uri"] = spec.homepage

@@ -3,22 +3,21 @@
 require "net/http"
 require "net/https"
 require "uri"
-require "faraday"
 
 module K3cloud
   # HTTP Client
   class Http
     attr_accessor :url, :header, :body, :connect_timeout, :request_timeout
 
-    def initialize(url, header, body, connect_timeout = 120, request_timeout = 120)
+    def initialize(url, header, body, connect_timeout, request_timeout)
       @url = url
       @header = header
       @body = body
-      @connect_timeout = connect_timeout
-      @request_timeout = request_timeout
+      @connect_timeout = connect_timeout || 120
+      @request_timeout = request_timeout || 120
     end
 
-    def post_json
+    def post
       uri = URI(@url)
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = (uri.scheme == "https")
@@ -33,8 +32,6 @@ module K3cloud
       response.body
     rescue StandardError => e
       K3cloud.logger.warn "#{e.message} => K3cloud::HTTP.post('#{@url}')"
-      e.backtrace
-
       nil
     end
   end
