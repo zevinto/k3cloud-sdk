@@ -13,6 +13,7 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
+#### 1. Single Account Configuration:
 You'll need to configure it in `config/initializers/k3cloud.rb`:
 
 ```ruby
@@ -33,6 +34,41 @@ Then you can call the k3cloud API using the following code:
     FilterString: ""
   }
   K3cloud.execute_bill_query(data)
+```
+
+#### 2. Multi Account Configuration:
+You'll need to configure it in `config/initializers/k3cloud.rb`:
+
+```ruby
+  config1 = K3cloud::Configuration.new do |c|
+    c.acct_id = ENV['K3CLOUD1_ACCT_ID']
+    c.user_name = ENV['K3CLOUD1_USERNAME']
+    c.app_id = ENV['K3CLOUD1_APP_ID']
+    c.app_secret= ENV['K3CLOUD1_APP_SECRET']
+    c.server_url = ENV['K3CLOUD1_SERVER_URL']
+  end
+
+  config2 = K3cloud::Configuration.new do |c|
+    c.acct_id = ENV['K3CLOUD2_ACCT_ID']
+    c.user_name = ENV['K3CLOUD2_USERNAME']
+    c.app_id = ENV['K3CLOUD2_APP_ID']
+    c.app_secret= ENV['K3CLOUD2_APP_SECRET']
+    c.server_url = ENV['K3CLOUD2_SERVER_URL']
+  end
+
+    K3cloud1 = K3cloud.new_api(config1)
+    K3cloud2 = K3cloud.new_api(config2)
+```
+
+Then you can call the k3cloud API using the following code:
+```ruby
+  data = {
+    FormId: "",
+    FieldKeys: "",
+    FilterString: ""
+  }
+  K3cloud1.execute_bill_query(data)
+  K3cloud2.execute_bill_query(data)
 ```
 
 ## Development

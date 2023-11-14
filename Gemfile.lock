@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    k3cloud-sdk (0.2.0)
+    k3cloud-sdk (0.3.0)
 
 GEM
   remote: https://rubygems.org/

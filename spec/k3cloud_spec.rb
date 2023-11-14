@@ -4,7 +4,7 @@ require "k3cloud"
 
 RSpec.describe K3cloud do
 
-  it "test query bill successful" do
+  it "test single account" do
     K3cloud.configure do |config|
       config.acct_id = ""
       config.user_name = ""
@@ -21,5 +21,37 @@ RSpec.describe K3cloud do
     result = K3cloud.execute_bill_query(data)
 
     expect(result).not_to be nil
+  end
+
+  it 'test multi account' do
+    config1 = K3cloud::Configuration.new do |c|
+      c.acct_id = ''
+      c.user_name = ''
+      c.app_id = ''
+      c.app_secret= ''
+      c.server_url = ''
+    end
+
+    config2 = K3cloud::Configuration.new do |c|
+      c.acct_id = ''
+      c.user_name = ''
+      c.app_id = ''
+      c.app_secret= ''
+      c.server_url = ''
+    end
+
+    K3cloud1 = K3cloud.new_api(config1)
+    K3cloud2 = K3cloud.new_api(config2)
+
+    data = {
+      FormId: "PRD_MO",
+      FieldKeys: "FMaterialId.FNumber, FNoStockInQty",
+      FilterString: "FStatus not in (6, 7)"
+    }
+    result1 = K3cloud1.execute_bill_query(data)
+    result2 = K3cloud2.execute_bill_query(data)
+
+    expect(K3cloud1).not_to be K3cloud2
+    expect(result1).not_to be result2
   end
 end

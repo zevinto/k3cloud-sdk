@@ -22,11 +22,15 @@ module K3cloud
       @logger ||= ::Logger.new($stderr)
     end
 
-    def api
-      @api ||= K3cloud::K3cloudApi.new
+    def new_api(config = nil)
+      if config
+        K3cloud::K3cloudApi.new(config)
+      else
+        @default_api ||= K3cloud::K3cloudApi.new
+      end
     end
 
-    def_delegators :api, :draft, :save, :batch_save, :submit, :audit, :un_audit, :view, :execute_bill_query, :delete,
+    def_delegators :new_api, :draft, :save, :batch_save, :submit, :audit, :un_audit, :view, :execute_bill_query, :delete,
                    :cancel_assign, :push, :execute_operation, :allocate, :cancel_allocate, :group_save, :query_group_info,
                    :group_delete, :attachment_upload, :attachment_download, :query_business_info, :get_sys_report_data,
                    :flex_save, :send_msg, :disassembly, :workflow_audit, :switch_org
