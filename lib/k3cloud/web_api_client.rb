@@ -58,7 +58,7 @@ module K3cloud
     def get_url_path(url)
       if url.start_with?("http")
         index = url.index("/", 10)
-        index.nil? ? url : url[index..]
+        index.nil? ? url : url[index..-1]
       else
         url
       end

@@ -11,7 +11,7 @@ module MD5Utils
     result = ""
 
     s.each_byte do |byte|
-      result += (byte & 0xFF | -256).to_s(16)[6..]
+      result += (byte & 0xFF | -256).to_s(16)[6..-1]
     end
 
     result

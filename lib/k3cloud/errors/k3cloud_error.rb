@@ -14,7 +14,7 @@ class K3cloudError < StandardError
 
   def self.parse(json)
     index = json.index("{")
-    json = json[index..] if index >= 0
+    json = json[index..-1] if index >= 0
 
     parsed_json = JSON.parse(json)
     kd_error = K3cloudError.new
