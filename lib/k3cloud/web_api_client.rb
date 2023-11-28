@@ -16,38 +16,22 @@ module K3cloud
     end
 
     def execute(service_name, parameters)
-      url = @config.server_url
-      if url.nil? || url.empty?
-        url = "https://api.kingdee.com/galaxyapi/"
-      else
-        url = url.to_s.strip.chomp("/")
-        url = "#{url}/#{service_name}.common.kdsvc"
-      end
-
-      header = build_header(get_url_path(url))
-      body = {
-        "format" => 1,
-        "useragent" => "ApiClient",
-        "parameters" => parameters,
-        "v" => "1.0"
-      }
-      request = Http.new(url, header, body, @config.connect_timeout, @config.request_timeout)
-      result = request.post
-
-      if result&.start_with?("response_error:")
+      result = execute_json(service_name, parameters)
+      if result.start_with?("response_error:")
         error = K3cloudError.parse(result)
-        raise StandardError, result if error.nil?
-
-        message = error.inner_ex_wrapper.nil? ? error.message : "#{error.message} --> #{error.inner_ex_wrapper.message}"
-        raise StandardError, message
+        if error.nil?
+          raise StandardError, result
+        else
+          message = error.inner_ex_wrapper.nil? ? error.message : "#{error.message} --> #{error.inner_ex_wrapper&.message}"
+          raise StandardError, message
+        end
       else
         begin
-          if result.include?(',"IsSuccess":false,')
-            raise StandardError, result
-          else
-            JSON.parse(result)
-          end
-        rescue JSON::ParserError => e
+          json = JSON.parse(result)
+          raise StandardError, json if result.include?(',"IsSuccess":false,')
+
+          json
+        rescue StandardError => e
           raise StandardError, "JSON parse error, response: [#{result}]", e
         end
       end
@@ -55,10 +39,26 @@ module K3cloud
 
     private
 
-    def get_url_path(url)
+    def execute_json(service_name, parameters)
+      url = @config.server_url
+      if url.nil? || url.empty?
+        url = "https://api.kingdee.com/galaxyapi/"
+      else
+        url = url.to_s.strip.chomp("/")
+      end
+      url = "#{url}/#{service_name}.common.kdsvc"
+      K3cloud.logger.info("request_url: #{url}")
+
+      header = build_header(url_path(url))
+      body = { parameters: parameters }
+      request = Http.new(url, header, body, @config.connect_timeout, @config.request_timeout)
+      request.post
+    end
+
+    def url_path(url)
       if url.start_with?("http")
         index = url.index("/", 10)
-        index.nil? ? url : url[index..-1]
+        index > -1 ? url[index..-1] : url
       else
         url
       end
@@ -94,6 +94,9 @@ module K3cloud
         header[ConstDefine::X_KD_SIGNATURE] = kd_signature
       end
       header
+    rescue StandardError => e
+      K3cloud.logger.info("#{e.backtrace}")
+      {}
     end
 
     def decode_sec(sec)
