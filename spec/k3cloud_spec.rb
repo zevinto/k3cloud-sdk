@@ -28,22 +28,22 @@ RSpec.describe K3cloud do
   describe "#multi_configuration" do
     before do
       @config1 = K3cloud::Configuration.new do |c|
-        c.acct_id = ''
-        c.user_name = ''
-        c.app_id = ''
-        c.app_secret= ''
-        c.server_url = ''
+        c.acct_id = ""
+        c.user_name = ""
+        c.app_id = ""
+        c.app_secret = ""
+        c.server_url = ""
       end
 
       @config2 = K3cloud::Configuration.new do |c|
-        c.acct_id = ''
-        c.user_name = ''
-        c.app_id = ''
-        c.app_secret= ''
-        c.server_url = ''
+        c.acct_id = ""
+        c.user_name = ""
+        c.app_id = ""
+        c.app_secret = ""
+        c.server_url = ""
       end
     end
-    it 'test multi account' do
+    it "test multi account" do
       K3cloud1 = K3cloud.new_api(@config1)
       K3cloud2 = K3cloud.new_api(@config2)
       data = {

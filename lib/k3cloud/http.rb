@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "k3cloud/errors/response_error"
 require "net/http"
 require "net/https"
 require "uri"
@@ -30,7 +31,7 @@ module K3cloud
       request.body = @body.to_json
       response = http.request(request)
       if response.code.to_i != 200 && response.code.to_i != 206
-        raise StandardError, "status: #{response.code}, desc: #{response.body}"
+        raise K3cloud::ResponseError, "status: #{response.code}, desc: #{response.body}"
       end
       response.body
     end

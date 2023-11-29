@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "k3cloud/errors/k3cloud_error"
+require "k3cloud/errors/response_error"
 require "k3cloud/utils/md5_utils"
 require "k3cloud/utils/base64_utils"
 require "k3cloud/utils/const_define"
@@ -19,20 +20,16 @@ module K3cloud
       result = execute_json(service_name, parameters)
       if result.start_with?("response_error:")
         error = K3cloudError.parse(result)
-        if error.nil?
-          raise StandardError, result
-        else
-          message = error.inner_ex_wrapper.nil? ? error.message : "#{error.message} --> #{error.inner_ex_wrapper&.message}"
-          raise StandardError, message
-        end
+        raise K3cloud::ResponseError, result if error.nil?
+
+        message = error.inner_ex_wrapper.nil? ? error.message : "#{error.message} --> #{error.inner_ex_wrapper&.message}"
+        raise K3cloud::ResponseError, message
+
       else
         begin
-          json = JSON.parse(result)
-          raise StandardError, json if result.include?(',"IsSuccess":false,')
-
-          json
-        rescue StandardError => e
-          raise StandardError, "JSON parse error, response: [#{result}]", e
+          JSON.parse(result)
+        rescue JSON::ParserError
+          raise K3cloud::ResponseError, "JSON parse error, response: [#{result}]"
         end
       end
     end
@@ -41,11 +38,11 @@ module K3cloud
 
     def execute_json(service_name, parameters)
       url = @config.server_url
-      if url.nil? || url.empty?
-        url = "https://api.kingdee.com/galaxyapi/"
-      else
-        url = url.to_s.strip.chomp("/")
-      end
+      url = if url.nil? || url.empty?
+              "https://api.kingdee.com/galaxyapi/"
+            else
+              url.to_s.strip.chomp("/")
+            end
       url = "#{url}/#{service_name}.common.kdsvc"
       K3cloud.logger.info("request_url: #{url}")
 
