@@ -29,7 +29,7 @@ module K3cloud
       request["User-Agent"] = "Kingdee/Ruby WebApi SDK"
       request.body = @body.to_json
       response = http.request(request)
-      if response.code != 200 && response.code != 206
+      if response.code.to_i != 200 && response.code.to_i != 206
         raise StandardError, "status: #{response.code}, desc: #{response.body}"
       end
       response.body

@@ -1,5 +1,5 @@
 # K3cloud-sdk
-Ruby Gem for K3cloud API.
+Ruby Gem for K3cloud OpenApi that uses cryptographic signature technology to avoid plaintext transmission of keys and enables automatic login.
 
 ## Installation
 

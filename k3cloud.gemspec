@@ -6,10 +6,10 @@ Gem::Specification.new do |spec|
   spec.name = "k3cloud-sdk"
   spec.version = K3cloud::VERSION
   spec.authors = ["zevinto"]
-  spec.email = ["aarontzf@yolanda.hk"]
+  spec.email = ["zevinto@163.com"]
 
   spec.summary = "Ruby Gem for K3cloud API."
-  spec.description = "Ruby Gem for K3cloud API."
+  spec.description = "Ruby Gem for K3Cloud that uses cryptographic signature technology to avoid plaintext transmission of keys and enables automatic login."
   spec.homepage = "https://github.com/zevinto/k3cloud-sdk"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.0.0"
