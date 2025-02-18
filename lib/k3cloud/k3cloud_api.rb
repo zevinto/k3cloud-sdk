@@ -136,7 +136,7 @@ module K3cloud
     private
 
     def handle_query_result(rows)
-      if !rows[0].nil? && (result = rows[0][0]).is_a?(Hash)
+      if !rows[0].nil? && !rows[0].empty? && (result = rows[0][0]).is_a?(Hash)
         K3cloud.logger.error({ errmsg: result, type: 'error', lever: 'ERROR' })
         []
       else
