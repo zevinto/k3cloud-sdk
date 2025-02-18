@@ -24,7 +24,7 @@ module K3cloud
       kd_error.inner_exception = K3cloudError.parse(parsed_json["InnerException"].to_json)
       kd_error
     rescue StandardError => e
-      K3cloud.logger.error("k3cloud Failed to parse exception message: #{e.message}")
+      K3cloud.logger.error({ errmsg: "Failed to parse exception message. #{e.message}", backtrace: "#{e.backtrace}", type: 'error', lever: 'ERROR' })
       nil
     end
   end

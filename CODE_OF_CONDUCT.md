@@ -20,7 +20,7 @@ Examples of unacceptable behavior include:
 
 * The use of sexualized language or imagery, and sexual attention or
   advances of any kind
-* Trolling, insulting or derogatory comments, and personal or political attacks
+* Trolling, insulting, or derogatory comments, and personal or political attacks
 * Public or private harassment
 * Publishing others' private information, such as a physical or email
   address, without their explicit permission
@@ -39,7 +39,9 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at tianzhenfei@yolanda.hk. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing,
+or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at zevinto@163.com.
+All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the reporter of any incident.
 

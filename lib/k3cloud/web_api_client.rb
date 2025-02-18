@@ -37,19 +37,22 @@ module K3cloud
     private
 
     def execute_json(service_name, parameters)
-      url = @config.server_url
-      url = if url.nil? || url.empty?
-              "https://api.kingdee.com/galaxyapi/"
-            else
-              url.to_s.strip.chomp("/")
-            end
-      url = "#{url}/#{service_name}.common.kdsvc"
-      K3cloud.logger.info("request_url: #{url}")
+      url = build_url(service_name)
+      K3cloud.logger.info("Request URL: #{url}")
 
       header = build_header(url_path(url))
       body = { parameters: parameters }
       request = Http.new(url, header, body, @config.connect_timeout, @config.request_timeout)
       request.post
+    end
+
+    def build_url(service_name)
+      base_url = if @config.server_url.nil? || @config.server_url.empty?
+              "https://api.kingdee.com/galaxyapi/"
+            else
+              @config.server_url.to_s.strip.chomp("/")
+            end
+      "#{base_url}/#{service_name}.common.kdsvc"
     end
 
     def url_path(url)
@@ -92,7 +95,7 @@ module K3cloud
       end
       header
     rescue StandardError => e
-      K3cloud.logger.info("#{e.backtrace}")
+      K3cloud.logger.error({ errmsg: "Build header exception.", backtrace: "#{e.backtrace}", type: 'error', lever: 'ERROR' })
       {}
     end
 

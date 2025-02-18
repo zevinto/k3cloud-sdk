@@ -4,52 +4,56 @@ require "k3cloud/errors/response_error"
 require "net/http"
 require "net/https"
 require "uri"
+require "json"
 
 module K3cloud
   # HTTP Client
   class Http
-    attr_accessor :url, :header, :body, :connect_timeout, :request_timeout
+    attr_accessor :url, :header, :body, :connect_timeout, :request_timeout, :status_code
 
-    def initialize(url, header, body, connect_timeout, request_timeout)
+    def initialize(url, header, body, connect_timeout = 120, request_timeout = 120)
       @url = url
-      @header = header
+      @header = header || {}
       @body = body
-      @connect_timeout = connect_timeout || 2
-      @request_timeout = request_timeout || 2
+      @connect_timeout = connect_timeout
+      @request_timeout = request_timeout
     end
 
     def post
-      uri = URI(@url)
+      uri = URI.parse(@url)
       http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = (uri.scheme == "https")
-      http.open_timeout = @connect_timeout * 60
-      http.read_timeout = @request_timeout * 60
-      request = Net::HTTP::Post.new(uri)
+      # SSL/TLS configuration
+      if uri.scheme == "https"
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
+
+      http.open_timeout = @connect_timeout
+      http.read_timeout = @request_timeout
+      request = Net::HTTP::Post.new(uri.request_uri)
       request.initialize_http_header(@header)
       request["Content-Type"] = "application/json"
-      request["User-Agent"] = "Kingdee/Ruby WebApi SDK"
-      request.body = @body.to_json
-      max_retries = 5 # 最大重试次数
-      retry_count = 0
-      sleep_interval = 5 # 重试间隔时间，单位秒
+      request["User-Agent"] = generate_user_agent
+      request.body = @body.is_a?(String) ? @body : @body.to_json
 
-      begin
-        response = http.request(request)
-        if response.code.to_i != 200 && response.code.to_i != 206
-          raise K3cloud::ResponseError, "status: #{response.code}, desc: #{response.body}"
-        end
-        response.body
-      rescue Errno::ETIMEDOUT, Net::OpenTimeout, Net::ReadTimeout => e
-        K3cloud.logger.error("Request timed out: #{e.message}")
-        if retry_count < max_retries
-          retry_count += 1
-          K3cloud.logger.info("Request timed out. Retrying #{retry_count}/#{max_retries} in #{sleep_interval} seconds...")
-          sleep(sleep_interval)
-          retry
-        else
-          raise K3cloud::ResponseError, "Request failed after #{max_retries} retries: #{e.message}, backtrace: #{e.backtrace}"
-        end
-      end
+      response = http.request(request)
+      @status_code = response.code.to_i
+      raise K3cloud::ResponseError, "status: #{response.code}, desc: #{response.body}" if @status_code >= 400
+
+      response.body
+    rescue Errno::ETIMEDOUT, Net::OpenTimeout, Net::ReadTimeout => e
+      raise K3cloud::ResponseError, "Request timed out: #{e.message}"
+    rescue Net::HTTPServerError => e
+      raise K3cloud::ResponseError, "Server error: #{e.message}"
+    rescue => e
+      raise K3cloud::ResponseError, "Unexpected error: #{e.message}"
+    end
+
+    private
+
+    # Generate User-Agent string with client info
+    def generate_user_agent
+      "Kingdee/Ruby WebApi SDK(v#{K3cloud::VERSION}) (Ruby #{RUBY_VERSION}; #{RUBY_PLATFORM})"
     end
   end
 end

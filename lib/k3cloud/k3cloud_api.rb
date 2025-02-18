@@ -42,7 +42,8 @@ module K3cloud
 
     # 单据查询
     def execute_bill_query(data)
-      execute("Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.ExecuteBillQuery", [data])
+      rows = execute("Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.ExecuteBillQuery", [data])
+      handle_query_result(rows)
     end
 
     # 删除
@@ -130,6 +131,17 @@ module K3cloud
     # 切换组织
     def switch_org(data)
       execute("Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.SwitchOrg", [data])
+    end
+
+    private
+
+    def handle_query_result(rows)
+      if !rows[0].nil? && (result = rows[0][0]).is_a?(Hash)
+        K3cloud.logger.error({ errmsg: result, type: 'error', lever: 'ERROR' })
+        []
+      else
+        []
+      end
     end
   end
 end
