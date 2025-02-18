@@ -32,15 +32,15 @@ module K3cloud
     attr_accessor :connect_timeout, :request_timeout
 
     def initialize(options = {})
-      @acct_id = options[:acct_id]
-      @user_name = options[:user_name]
-      @password = options[:password]
-      @app_id = options[:app_id]
-      @app_secret = options[:app_secret]
-      @server_url = options[:server_url]
-      @org_num = options[:org_num]
-      @connect_timeout = options[:connect_timeout]
-      @request_timeout = options[:request_timeout]
+      @acct_id          = options[:acct_id]
+      @user_name        = options[:user_name]
+      @password         = options[:password]
+      @app_id           = options[:app_id]
+      @app_secret       = options[:app_secret]
+      @server_url       = options[:server_url]
+      @org_num          = options[:org_num]
+      @connect_timeout  = options[:connect_timeout]
+      @request_timeout  = options[:request_timeout]
 
       yield(self) if block_given?
     end
