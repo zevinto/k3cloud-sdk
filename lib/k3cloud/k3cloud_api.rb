@@ -140,7 +140,7 @@ module K3cloud
         K3cloud.logger.error({ errmsg: result, type: 'error', lever: 'ERROR' })
         []
       else
-        []
+        rows
       end
     end
   end
